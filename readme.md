@@ -8,9 +8,9 @@ Final class project of Software Modernization class of Uniandes MISO master degr
 - Infra: Terraform infrastructure managment
 
 
-## Doc
+## Docs
 
-### Project purpose
+### Old Architecture
 
 
 ### New architecture

@@ -1,0 +1,22 @@
+services:
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: products_dynamodb_local
+    ports:
+      - '8001:8000'
+    command: -jar DynamoDBLocal.jar -inMemory -sharedDb
+
+  products-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: products-service:local
+    container_name: products_service_local
+    depends_on:
+      - dynamodb
+    environment:
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      PRODUCTS_TABLE_NAME: ${PRODUCTS_TABLE_NAME:-Products}
+      DYNAMODB_ENDPOINT_URL: http://dynamodb:8000
+    ports:
+      - '8000:8000'

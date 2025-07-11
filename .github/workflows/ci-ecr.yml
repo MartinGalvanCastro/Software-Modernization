@@ -8,7 +8,7 @@ on:
       - 'backend/services/**'
 
 env:
-  AWS_REGION:   ${{ secrets.AWS_REGION }}
+  AWS_REGION:    ${{ secrets.AWS_REGION }}
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
 jobs:
@@ -28,11 +28,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Fetch full history for diff
+        run: git fetch --no-tags origin main
+
       - name: Detect changes in ${{ matrix.service }}
         id: changed
         run: |
-          if git diff --name-only origin/main...HEAD \
-             | grep -q "^backend/services/${{ matrix.service }}/"; then
+          echo "Comparing ${{ github.event.before }} → ${{ github.sha }}"
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
+               | grep -q "^backend/services/${{ matrix.service }}/"; then
             echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT

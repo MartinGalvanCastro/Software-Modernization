@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     APP_TITLE: str = "Products API"
-    APP_DESCRIPTION: str = "API for managing products (El Peppepe)"
+    APP_DESCRIPTION: str = "API for managing products (El Peppe)"
     APP_VERSION: str = "1.0.0"
     AWS_REGION: str
     PRODUCTS_TABLE_NAME: str

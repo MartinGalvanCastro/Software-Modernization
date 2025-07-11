@@ -1,0 +1,26 @@
+# Local .terraform directories (Terraform plugins & modules cache)
+**/.terraform/
+
+# State files (keep these out of Git—use your S3 backend instead)
+*.tfstate
+*.tfstate.backup
+
+# Crash logs
+crash.log
+
+# CLI override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Sensitive variable files
+*.tfvars
+!*.tfvars.example
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore generated plan output (if you ever save it locally)
+*.tfplan

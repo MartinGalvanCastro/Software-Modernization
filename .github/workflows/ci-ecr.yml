@@ -2,7 +2,8 @@ name: CI → ECR
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
     paths:
       - 'backend/services/**'
 
@@ -22,9 +23,12 @@ jobs:
         working-directory: backend/services/${{ matrix.service }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Detect changes
+      - name: Detect changes in ${{ matrix.service }}
         id: changed
         run: |
           if git diff --name-only origin/main...HEAD \
@@ -34,9 +38,9 @@ jobs:
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Skip if no changes
+      - name: Skip build if no changes
         if: steps.changed.outputs.changed == 'false'
-        run: echo "No changes in ${{ matrix.service }}"
+        run: echo "No changes in ${{ matrix.service }}, skipping."
 
       - name: Configure AWS credentials
         if: steps.changed.outputs.changed == 'true'
@@ -46,7 +50,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ${{ env.AWS_REGION }}
 
-      - name: Log in to ECR
+      - name: Log in to Amazon ECR
         if: steps.changed.outputs.changed == 'true'
         uses: aws-actions/amazon-ecr-login@v1
 

@@ -8,8 +8,6 @@ from src.infrastructure.middlewares.exception_handlers import (
     register_exception_handlers,
 )
 from src.infrastructure.logging import setup_logging
-from src.infrastructure.middlewares.prefix_split import StripPrefixMiddleware
-
 
 
 
@@ -27,7 +25,6 @@ app = FastAPI(
     root_path="/products",
 )
 
-app.add_middleware(StripPrefixMiddleware, prefix="/products")
 
 app.include_router(health_router)
 

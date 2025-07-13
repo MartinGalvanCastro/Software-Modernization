@@ -23,6 +23,11 @@ variable "execution_role_arn" {
   description = "IAM role ARN for ECS task execution"
 }
 
+variable "task_role_arn" {
+  type = string
+    description = "IAM role ARN for ECS task to access AWS services"
+}
+
 variable "subnet_ids" {
   type        = list(string)
   description = "List of subnet IDs for the Fargate tasks"

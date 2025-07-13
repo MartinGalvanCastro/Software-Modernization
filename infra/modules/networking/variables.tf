@@ -1,6 +1,6 @@
 variable "name" {
   type        = string
-  description = "Prefix for networking resources"
+  description = "Prefix for all networking resources"
 }
 
 variable "vpc_cidr" {
@@ -10,11 +10,11 @@ variable "vpc_cidr" {
 
 variable "container_port" {
   type        = number
-  description = "Port the container listens on"
+  description = "Port your containers listen on (e.g. 8000)"
 }
 
 variable "health_path" {
   type        = string
-  description = "Health-check path for target group"
+  description = "Health-check endpoint path"
   default     = "/health/ready"
 }

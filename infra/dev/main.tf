@@ -19,18 +19,24 @@ module "ecs_cluster" {
   cluster_name = "modernizacion-cluster"
 }
 
+
 module "iam" {
-  source    = "../modules/iam"
-  role_name = "modernizacion-ecs-exec-role"
+  source           = "../modules/iam"
+  role_name        = "modernizacion-ecs"
+  aws_region       = var.aws_region
+  dynamodb_tables  = [
+    module.dynamodb_products.name,
+    # add future service tables here…
+  ]
 }
 
 module "networking" {
   source         = "../modules/networking"
-  name           = "products"
+  name           = "modernizacion"
   vpc_cidr       = var.vpc_cidr
   container_port = 8000
+  health_path    = "/health/ready"
 }
-
 
 
 ######
@@ -70,9 +76,10 @@ module "ecs_service_products" {
   container_image      = "${module.ecr_products.repository_url}:latest"
   container_port       = 8000
   execution_role_arn   = module.iam.execution_role_arn
+  task_role_arn       = module.iam.task_role_arn
   subnet_ids           = module.networking.subnet_ids
-  security_group_ids   = [module.networking.security_group_id]
-  target_group_arn     = module.networking.target_group_arn
+  security_group_ids = [module.networking.ecs_security_group_id]
+  target_group_arn   = module.networking.products_target_group_arn
   aws_region = var.aws_region
   environment = {
     AWS_REGION            = var.aws_region

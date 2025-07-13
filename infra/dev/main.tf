@@ -90,6 +90,8 @@ module "ecs_service_products" {
     AWS_REGION            = var.aws_region
     PRODUCTS_TABLE_NAME   = module.dynamodb_products.name
     DYNAMODB_ENDPOINT_URL = "https://dynamodb.${var.aws_region}.amazonaws.com"
+    COGNITO_USERPOOL_ID = module.cognito.user_pool_id
+    COGNITO_APP_CLIENT_ID = module.cognito.user_pool_client_id
   }
 }
 

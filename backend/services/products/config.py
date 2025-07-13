@@ -9,8 +9,16 @@ class Settings(BaseSettings):
     PRODUCTS_TABLE_NAME: str
     DYNAMODB_ENDPOINT_URL: str = ""
     LOG_LEVEL: str = "INFO"
-#    JWT_ISSUER: str
-#    JWT_AUDIENCE: str
+    COGNITO_USERPOOL_ID: str
+    COGNITO_APP_CLIENT_ID: str
+
+    @property
+    def cognito_issuer(self) -> str:
+        return f"https://cognito-idp.{self.AWS_REGION}.amazonaws.com/{self.COGNITO_USERPOOL_ID}"
+
+    @property
+    def cognito_jwks_url(self) -> str:
+        return f"{self.cognito_issuer}/.well-known/jwks.json"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

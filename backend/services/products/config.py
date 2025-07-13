@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     AWS_REGION: str
     PRODUCTS_TABLE_NAME: str
     DYNAMODB_ENDPOINT_URL: str = ""
+    LOG_LEVEL: str = "INFO"
 #    JWT_ISSUER: str
 #    JWT_AUDIENCE: str
 

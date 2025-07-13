@@ -22,5 +22,5 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-# Ignore generated plan output (if you ever save it locally)
+# Ignore generated plan output.tf (if you ever save it locally)
 *.tfplan

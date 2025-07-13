@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.domain.ports import ProductRepositoryPort
@@ -8,6 +9,7 @@ router = APIRouter(
     include_in_schema=False,  # hide endpoints from OpenAPI
 )
 
+logger = logging.getLogger("product_service.health")
 
 @router.get("/live", include_in_schema=False)
 async def liveness():
@@ -23,6 +25,7 @@ async def readiness(repo: ProductRepositoryPort = Depends(get_repository)):
         await repo.ping()
         return {"status": "ready"}
     except Exception as e:
+        logger.error(f"Readiness failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Readiness failed: {e}",

@@ -71,7 +71,7 @@ jobs:
           docker tag $IMAGE_SHA $IMAGE_LATEST
           docker push $IMAGE_LATEST
 
-      - name: Set output image URIs
+      - name: Set output.tf image URIs
         if: steps.changed.outputs.changed == 'true'
         id: image
         run: |

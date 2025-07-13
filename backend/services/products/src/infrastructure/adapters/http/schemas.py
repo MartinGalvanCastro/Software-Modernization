@@ -56,7 +56,7 @@ class ProductOut(BaseModel):
     @classmethod
     def from_domain(cls, product: Product) -> "ProductOut":
         """
-        Create an output schema from a domain Product entity.
+        Create an output.tf schema from a domain Product entity.
         """
         return cls(
             code=product.code,

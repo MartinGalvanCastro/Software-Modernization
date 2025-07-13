@@ -1,0 +1,5 @@
+.venv
+.env
+create-products-table.json
+docker-compose.yaml
+README.md

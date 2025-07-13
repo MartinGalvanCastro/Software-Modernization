@@ -1,0 +1,20 @@
+services:
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: sellers_dynamodb_local
+    ports:
+      - '8001:8000'
+    command: -jar DynamoDBLocal.jar -inMemory -sharedDb
+
+  sellers-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sellers-service:local
+    container_name: sellers_service_local
+    depends_on:
+      - dynamodb
+    env_file:
+      - .env
+    ports:
+      - '8000:8000'

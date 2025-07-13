@@ -78,3 +78,23 @@ jobs:
           ECR_PREFIX=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
           echo "::set-output name=sha_image::${ECR_PREFIX}/${{ matrix.service }}:${GITHUB_SHA}"
           echo "::set-output name=latest_image::${ECR_PREFIX}/${{ matrix.service }}:latest"
+
+
+  deploy:
+    needs: build-and-push
+    if: needs.build-and-push.outputs['build-and-push.changed'] == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/github-actions
+
+      - name: Force new ECS deployment
+        run: |
+          SERVICE=${{ matrix.service }}
+          aws ecs update-service \
+            --cluster modernizacion-cluster \
+            --service $SERVICE \
+            --force-new-deployment

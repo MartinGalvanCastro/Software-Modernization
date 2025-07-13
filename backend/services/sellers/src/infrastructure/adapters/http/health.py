@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.domain.ports import ProductRepositoryPort
+from src.domain.ports import SellerRepositoryPort
 from src.infrastructure.di import get_repository
 
 router = APIRouter(
@@ -9,7 +9,7 @@ router = APIRouter(
     include_in_schema=False,  # hide endpoints from OpenAPI
 )
 
-logger = logging.getLogger("product_service.health")
+logger = logging.getLogger("sellers_service.health")
 
 @router.get("/live", include_in_schema=False)
 async def liveness():
@@ -18,7 +18,7 @@ async def liveness():
 
 
 @router.get("/ready", include_in_schema=False)
-async def readiness(repo: ProductRepositoryPort = Depends(get_repository)):
+async def readiness(repo: SellerRepositoryPort = Depends(get_repository)):
     """Readiness probe: checks downstream dependencies (e.g., database)."""
     try:
         # Delegate health check to repository ping() method

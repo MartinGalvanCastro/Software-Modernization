@@ -57,26 +57,25 @@ resource "aws_security_group" "ecs_sg" {
   name        = "${var.name}-ecs-sg"
   vpc_id      = aws_vpc.this.id
   description = "ECS tasks SG"
-
-  # Allow the ALB SG to talk to each service’s port
-  dynamic "ingress" {
-    for_each = var.services
-    content {
-      from_port       = ingress.value.port
-      to_port         = ingress.value.port
-      protocol        = "tcp"
-      security_groups = [aws_security_group.alb_sg.id]
-      description     = "Allow ALB to ${ingress.key} on port ${ingress.value.port}"
-    }
-  }
-
-  # Allow all outbound
+  # only default egress here
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_security_group_rule" "allow_alb_to_svc" {
+  for_each = var.services
+
+  type                     = "ingress"
+  description              = "Allow ALB ${each.key} on port ${each.value.port}"
+  from_port                = each.value.port
+  to_port                  = each.value.port
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.ecs_sg.id
+  source_security_group_id = aws_security_group.alb_sg.id
 }
 
 

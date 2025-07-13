@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     APP_DESCRIPTION: str = "API for managing sellers"
     APP_VERSION: str = "1.0.0"
     AWS_REGION: str
-    PRODUCTS_TABLE_NAME: str
+    SELLERS_TABLE_NAME: str
     DYNAMODB_ENDPOINT_URL: str = ""
     LOG_LEVEL: str = "INFO"
     COGNITO_USERPOOL_ID: str

@@ -8,12 +8,12 @@ from starlette.status import (
 )
 
 from src.domain.exceptions import (
-    DuplicateProductError,
-    InvalidPriceError,
+    DuplicateSaleError,
+    InvalidSaleError,
     NotFoundError,
 )
 
-logger = logging.getLogger("product_service.exceptions")
+logger = logging.getLogger("sales_service.exceptions")
 
 
 def register_exception_handlers(app: FastAPI):
@@ -34,10 +34,10 @@ def register_exception_handlers(app: FastAPI):
             },
         )
 
-    @app.exception_handler(DuplicateProductError)
-    async def duplicate_product_handler(request: Request, exc: DuplicateProductError):
+    @app.exception_handler(DuplicateSaleError)
+    async def duplicate_sale_handler(request: Request, exc: DuplicateSaleError):
         logger.warning(
-            "DuplicateProductError: %s %s → %s",
+            "DuplicateSaleError: %s %s → %s",
             request.method,
             request.url.path,
             exc,
@@ -45,16 +45,16 @@ def register_exception_handlers(app: FastAPI):
         return JSONResponse(
             status_code=HTTP_400_BAD_REQUEST,
             content={
-                "title": "Duplicate Product",
+                "title": "Duplicate Sale",
                 "detail": str(exc),
                 "status": HTTP_400_BAD_REQUEST,
             },
         )
 
-    @app.exception_handler(InvalidPriceError)
-    async def invalid_price_handler(request: Request, exc: InvalidPriceError):
+    @app.exception_handler(InvalidSaleError)
+    async def invalid_sale_handler(request: Request, exc: InvalidSaleError):
         logger.warning(
-            "InvalidPriceError: %s %s → %s",
+            "InvalidSaleError: %s %s → %s",
             request.method,
             request.url.path,
             exc,
@@ -62,7 +62,7 @@ def register_exception_handlers(app: FastAPI):
         return JSONResponse(
             status_code=HTTP_400_BAD_REQUEST,
             content={
-                "title": "Invalid Price",
+                "title": "Invalid Sale",
                 "detail": str(exc),
                 "status": HTTP_400_BAD_REQUEST,
             },

@@ -1,12 +1,12 @@
 from decimal import Decimal
-
+from uuid import UUID
 
 class DomainError(Exception):
     """Base class for all domain‐layer errors."""
 
 
 class NotFoundError(DomainError):
-    def __init__(self, identifier: str) -> None:
+    def __init__(self, identifier: UUID) -> None:
         """
         :param identifier: the ID or code of the missing product.
         """

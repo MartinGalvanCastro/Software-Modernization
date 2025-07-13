@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
+from decimal import Decimal
+from uuid import UUID
 
 from src.domain.entities import Product
 
@@ -29,20 +31,38 @@ class ProductRepositoryPort(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def create(self, product: Product) -> None:
+    async def create(
+            self,
+            name: str,
+            description: str,
+            price: Decimal
+    ) -> Product:
         """
         Persist a new product in the data store.
 
-        :param product: Product entity to create.
+        :param name:        Name of the product.
+        :param description: Description of the product.
+        :param price:       Price of the product (must be > 0).
+        :return:            The created Product entity, complete with its generated UUID and timestamps.
         """
         raise NotImplementedError()
 
     @abstractmethod
-    async def update(self, product: Product) -> None:
+    async def update(
+            self,
+            code: UUID,
+            name: str,
+            description: str,
+            price: Decimal
+    ) -> Product:
         """
         Update an existing product in the data store.
 
-        :param product: Product entity with updated values.
+        :param code:        UUID of the product to update.
+        :param name:        New name of the product.
+        :param description: New description of the product.
+        :param price:       New price of the product (must be > 0).
+        :return:            The updated Product entity.
         """
         raise NotImplementedError()
 

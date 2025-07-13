@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
+from uuid import UUID, uuid4
 
 from src.domain.exceptions import InvalidPriceError
 
@@ -29,9 +30,25 @@ class Product:
     Core domain entity for a Product.
     """
 
-    code: str
+    code: UUID
     name: str
     description: str
     price: Price
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+    @staticmethod
+    def new(name: str, description: str, price: Price) -> "Product":
+        """
+        Factory method to create a new Product with a generated UUID
+        and current timestamps.
+        """
+        now = datetime.utcnow()
+        return Product(
+            code=uuid4(),
+            name=name,
+            description=description,
+            price=price,
+            created_at=now,
+            updated_at=now,
+        )

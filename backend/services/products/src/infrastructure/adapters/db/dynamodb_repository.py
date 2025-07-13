@@ -43,7 +43,7 @@ class DynamoDBProductRepo(ProductRepositoryPort):
 
     async def get_by_code(self, code: str) -> Optional[Product]:
         try:
-            item = ProductModel.get(hash_key=code)
+            item = ProductModel.get(hash_key=str(code))
             return _to_domain(item)
         except ProductModel.DoesNotExist:
             return None
@@ -53,7 +53,7 @@ class DynamoDBProductRepo(ProductRepositoryPort):
         Save a new product item. Table provisioning is handled externally (e.g., via Terraform).
         """
         ProductModel(
-            code=product.code,
+            code=str(product.code),
             name=product.name,
             description=product.description,
             price=float(product.price.amount),

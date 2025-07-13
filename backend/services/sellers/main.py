@@ -3,13 +3,12 @@ from fastapi import FastAPI, Depends
 
 from config import settings
 from src.infrastructure.adapters.http.health import router as health_router
-from src.infrastructure.adapters.http.routers import router as seller_router
 from src.infrastructure.middlewares.exception_handlers import (
     register_exception_handlers,
 )
+from src.infrastructure.adapters.http.routers import router as seller_router
 from src.infrastructure.logging import setup_logging
 from src.infrastructure.auth import get_current_user
-
 
 
 @asynccontextmanager
@@ -29,7 +28,6 @@ app = FastAPI(
 
 app.include_router(health_router)
 app.include_router(seller_router, dependencies=[Depends(get_current_user)])
-
 
 
 register_exception_handlers(app)

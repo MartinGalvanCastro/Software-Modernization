@@ -24,12 +24,7 @@ app = FastAPI(
     description=settings.APP_DESCRIPTION,
     version=settings.APP_VERSION,
     lifespan=lifespan,
-    docs_url="/products/docs",
-    redoc_url="/products/redoc",
-    openapi_url="/products/openapi.json",
-    swagger_ui_parameters={
-        "url": "/products/openapi.json"
-    }
+    root_path="/products",
 )
 
 app.add_middleware(StripPrefixMiddleware, prefix="/products")

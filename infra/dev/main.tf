@@ -31,11 +31,16 @@ module "iam" {
 }
 
 module "networking" {
-  source         = "../modules/networking"
-  name           = "modernizacion"
+  source = "../modules/networking"
+
+  services = {
+    products = { prefix = "/products", port = 8000 }
+    #sales    = { prefix = "/sales",    port = 8000 }
+    #sellers  = { prefix = "/sellers",  port = 8000 }
+  }
+
   vpc_cidr       = var.vpc_cidr
-  container_port = 8000
-  health_path    = "/health/ready"
+  name           = "modernizacion"
 }
 
 
@@ -79,7 +84,7 @@ module "ecs_service_products" {
   task_role_arn       = module.iam.task_role_arn
   subnet_ids           = module.networking.subnet_ids
   security_group_ids = [module.networking.ecs_security_group_id]
-  target_group_arn   = module.networking.products_target_group_arn
+  target_group_arn   = module.networking.target_group_arns["products"]
   aws_region = var.aws_region
   environment = {
     AWS_REGION            = var.aws_region

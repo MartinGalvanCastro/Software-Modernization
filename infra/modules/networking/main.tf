@@ -58,12 +58,19 @@ resource "aws_security_group" "ecs_sg" {
   vpc_id      = aws_vpc.this.id
   description = "ECS tasks SG"
 
-  ingress {
-    from_port       = var.container_port
-    to_port         = var.container_port
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb_sg.id]
+  # Allow the ALB SG to talk to each service’s port
+  dynamic "ingress" {
+    for_each = var.services
+    content {
+      from_port       = ingress.value.port
+      to_port         = ingress.value.port
+      protocol        = "tcp"
+      security_groups = [aws_security_group.alb_sg.id]
+      description     = "Allow ALB to ${ingress.key} on port ${ingress.value.port}"
+    }
   }
+
+  # Allow all outbound
   egress {
     from_port   = 0
     to_port     = 0
@@ -71,6 +78,7 @@ resource "aws_security_group" "ecs_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
 
 # ALB
 resource "aws_lb" "alb" {
@@ -82,15 +90,17 @@ resource "aws_lb" "alb" {
 }
 
 # Target Group for Products
-resource "aws_lb_target_group" "products" {
-  name        = "products-tg"
-  port        = var.container_port
+resource "aws_lb_target_group" "svc_tg" {
+  for_each = var.services
+
+  name        = "${each.key}-tg"
+  port        = each.value.port
   protocol    = "HTTP"
   vpc_id      = aws_vpc.this.id
   target_type = "ip"
 
   health_check {
-    path                = var.health_path
+    path                = "${each.value.prefix}/health/ready"
     port                = "traffic-port"
     matcher             = "200-399"
     interval            = 15
@@ -116,18 +126,19 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-resource "aws_lb_listener_rule" "products" {
+resource "aws_lb_listener_rule" "svc_rule" {
+  for_each    = var.services
   listener_arn = aws_lb_listener.http.arn
-  priority     = 10
+  priority     = 100 + index(keys(var.services), each.key)
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.products.arn
+    target_group_arn = aws_lb_target_group.svc_tg[each.key].arn
   }
 
   condition {
     path_pattern {
-      values = ["/products/*"]
+      values = ["${each.value.prefix}/*"]
     }
   }
 }

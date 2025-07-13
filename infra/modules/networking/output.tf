@@ -28,7 +28,11 @@ output "ecs_security_group_id" {
   description = "Security Group ID for ECS tasks"
 }
 
-output "products_target_group_arn" {
-  value       = aws_lb_target_group.products.arn
-  description = "ARN of the Products target group"
+# Map of service name → Target Group ARN
+output "target_group_arns" {
+  description = "Map of each service to its ALB target group ARN"
+  value       = {
+    for svc, tg in aws_lb_target_group.svc_tg :
+    svc => tg.arn
+  }
 }

@@ -8,13 +8,14 @@ variable "vpc_cidr" {
   description = "CIDR block for the VPC"
 }
 
-variable "container_port" {
-  type        = number
-  description = "Port your containers listen on (e.g. 8000)"
+variable "services" {
+  description = <<EOF
+A map of microservice names to their path prefixes and ports:
+{
+  products = { prefix = "/products", port = 8000 },
+  sales    = { prefix = "/sales",    port = 8000 },
+  sellers  = { prefix = "/sellers",  port = 8000 },
 }
-
-variable "health_path" {
-  type        = string
-  description = "Health-check endpoint path"
-  default     = "/health/ready"
+EOF
+  type = map(object({ prefix = string, port = number }))
 }

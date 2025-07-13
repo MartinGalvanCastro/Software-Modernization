@@ -1,42 +1,35 @@
-name: CI → ECR
+name: Build → ECR → Deploy to ECS
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
     paths:
-      - 'backend/services/**'
+      - 'services/products/**'
+      - 'services/sales/**'
+      - 'services/sellers/**'
 
 env:
-  AWS_REGION:    ${{ secrets.AWS_REGION }}
+  AWS_REGION: us-east-1
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  ECR_PREFIX: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [products, sales, sellers]
-
+        service: [ products, sales, sellers ]
     defaults:
       run:
-        working-directory: backend/services/${{ matrix.service }}
-
+        working-directory: services/${{ matrix.service }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Fetch full history for diff
-        run: git fetch --no-tags origin main
+      - uses: actions/checkout@v3
 
       - name: Detect changes in ${{ matrix.service }}
         id: changed
         run: |
-          echo "Comparing ${{ github.event.before }} → ${{ github.sha }}"
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
-               | grep -q "^backend/services/${{ matrix.service }}/"; then
+          if git diff --name-only origin/main...HEAD \
+             | grep -q "^services/${{ matrix.service }}/"; then
             echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
@@ -44,41 +37,34 @@ jobs:
 
       - name: Skip build if no changes
         if: steps.changed.outputs.changed == 'false'
-        run: echo "No changes in ${{ matrix.service }}, skipping."
+        run: echo "No changes in services/${{ matrix.service }}; skipping."
 
       - name: Configure AWS credentials
         if: steps.changed.outputs.changed == 'true'
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region:            ${{ env.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/github-actions
 
       - name: Log in to Amazon ECR
         if: steps.changed.outputs.changed == 'true'
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag & push Docker image
+      - name: Build & Push Docker image
         if: steps.changed.outputs.changed == 'true'
         run: |
-          ECR_PREFIX=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
-          IMAGE_SHA=$ECR_PREFIX/${{ matrix.service }}:${GITHUB_SHA}
-          IMAGE_LATEST=$ECR_PREFIX/${{ matrix.service }}:latest
+          IMAGE_URI=${ECR_PREFIX}/${{ matrix.service }}:${GITHUB_SHA}
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+          docker tag $IMAGE_URI ${ECR_PREFIX}/${{ matrix.service }}:latest
+          docker push ${ECR_PREFIX}/${{ matrix.service }}:latest
 
-          docker build -t $IMAGE_SHA .
-          docker push $IMAGE_SHA
-
-          docker tag $IMAGE_SHA $IMAGE_LATEST
-          docker push $IMAGE_LATEST
-
-      - name: Set output.tf image URIs
+      - name: Set image outputs
         if: steps.changed.outputs.changed == 'true'
         id: image
         run: |
-          ECR_PREFIX=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
-          echo "::set-output name=sha_image::${ECR_PREFIX}/${{ matrix.service }}:${GITHUB_SHA}"
-          echo "::set-output name=latest_image::${ECR_PREFIX}/${{ matrix.service }}:latest"
-
+          echo "image=$ECR_PREFIX/${{ matrix.service }}:${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          echo "latest=$ECR_PREFIX/${{ matrix.service }}:latest"     >> $GITHUB_OUTPUT
 
   deploy:
     needs: build-and-push
@@ -93,7 +79,7 @@ jobs:
 
       - name: Force new ECS deployment
         run: |
-          SERVICE=${{ matrix.service }}
+          SERVICE=${{ matrix.service }} 
           aws ecs update-service \
             --cluster modernizacion-cluster \
             --service $SERVICE \

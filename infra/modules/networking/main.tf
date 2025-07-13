@@ -1,4 +1,5 @@
-# VPC & public subnets
+#── VPC + subnets ───────────────────────────────────────────────────────────────
+
 resource "aws_vpc" "this" {
   cidr_block = var.vpc_cidr
 }
@@ -19,6 +20,7 @@ resource "aws_internet_gateway" "gw" {
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
+
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.gw.id
@@ -31,12 +33,13 @@ resource "aws_route_table_association" "public_assoc" {
   route_table_id = aws_route_table.public.id
 }
 
-# Security Groups
-# ALB SG: allow HTTP in
+#── SECURITY GROUPS ────────────────────────────────────────────────────────────
+
+# ALB SG: allow inbound HTTP/80 from anywhere
 resource "aws_security_group" "alb_sg" {
   name        = "${var.name}-alb-sg"
+  description = "Allow HTTP to ALB"
   vpc_id      = aws_vpc.this.id
-  description = "ALB SG"
 
   ingress {
     from_port   = 80
@@ -44,6 +47,7 @@ resource "aws_security_group" "alb_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -52,12 +56,30 @@ resource "aws_security_group" "alb_sg" {
   }
 }
 
-# ECS tasks SG: allow ALB → container_port
+locals {
+  unique_ports = distinct([
+    for svc in var.services : svc.port
+  ])
+}
+
+# ECS tasks SG: allow traffic from the ALB on each service’s port
 resource "aws_security_group" "ecs_sg" {
   name        = "${var.name}-ecs-sg"
+  description = "Allow ALB to ECS tasks"
   vpc_id      = aws_vpc.this.id
-  description = "ECS tasks SG"
-  # only default egress here
+
+  # 2) Only one rule per unique port:
+  dynamic "ingress" {
+    for_each = local.unique_ports
+    content {
+      from_port       = ingress.value
+      to_port         = ingress.value
+      protocol        = "tcp"
+      security_groups = [aws_security_group.alb_sg.id]
+      description     = "Allow ALB to ECS tasks on port ${ingress.value}"
+    }
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -66,20 +88,8 @@ resource "aws_security_group" "ecs_sg" {
   }
 }
 
-resource "aws_security_group_rule" "allow_alb_to_svc" {
-  for_each = var.services
+#── APPLICATION LOAD BALANCER ──────────────────────────────────────────────────
 
-  type                     = "ingress"
-  description              = "Allow ALB ${each.key} on port ${each.value.port}"
-  from_port                = each.value.port
-  to_port                  = each.value.port
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.ecs_sg.id
-  source_security_group_id = aws_security_group.alb_sg.id
-}
-
-
-# ALB
 resource "aws_lb" "alb" {
   name               = "${var.name}-alb"
   internal           = false
@@ -88,15 +98,15 @@ resource "aws_lb" "alb" {
   security_groups    = [aws_security_group.alb_sg.id]
 }
 
-# Target Group for Products
-resource "aws_lb_target_group" "svc_tg" {
-  for_each = var.services
+#── PER-SERVICE TARGET GROUPS ─────────────────────────────────────────────────
 
-  name        = "${each.key}-tg"
-  port        = each.value.port
-  protocol    = "HTTP"
-  vpc_id      = aws_vpc.this.id
-  target_type = "ip"
+resource "aws_lb_target_group" "svc_tg" {
+  for_each     = var.services
+  name         = "${each.key}-tg"
+  port         = each.value.port
+  protocol     = "HTTP"
+  vpc_id       = aws_vpc.this.id
+  target_type  = "ip"
 
   health_check {
     path                = "${each.value.prefix}/health/ready"
@@ -109,12 +119,12 @@ resource "aws_lb_target_group" "svc_tg" {
   }
 }
 
-# Listener + Path Rule
+#── HTTP LISTENER + PATH-BASED ROUTING ─────────────────────────────────────────
+
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.alb.arn
   port              = 80
   protocol          = "HTTP"
-
   default_action {
     type = "fixed-response"
     fixed_response {
@@ -126,8 +136,9 @@ resource "aws_lb_listener" "http" {
 }
 
 resource "aws_lb_listener_rule" "svc_rule" {
-  for_each    = var.services
+  for_each     = var.services
   listener_arn = aws_lb_listener.http.arn
+  # give each rule a unique priority (e.g. 100,101,102…)
   priority     = 100 + index(keys(var.services), each.key)
 
   action {

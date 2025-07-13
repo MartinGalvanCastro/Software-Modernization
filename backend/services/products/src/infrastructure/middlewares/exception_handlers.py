@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette.status import (
@@ -12,10 +13,18 @@ from src.domain.exceptions import (
     NotFoundError,
 )
 
+logger = logging.getLogger("product_service.exceptions")
+
 
 def register_exception_handlers(app: FastAPI):
     @app.exception_handler(NotFoundError)
     async def not_found_handler(request: Request, exc: NotFoundError):
+        logger.warning(
+            "NotFoundError: %s %s → %s",
+            request.method,
+            request.url.path,
+            exc,
+        )
         return JSONResponse(
             status_code=HTTP_404_NOT_FOUND,
             content={
@@ -27,6 +36,12 @@ def register_exception_handlers(app: FastAPI):
 
     @app.exception_handler(DuplicateProductError)
     async def duplicate_product_handler(request: Request, exc: DuplicateProductError):
+        logger.warning(
+            "DuplicateProductError: %s %s → %s",
+            request.method,
+            request.url.path,
+            exc,
+        )
         return JSONResponse(
             status_code=HTTP_400_BAD_REQUEST,
             content={
@@ -38,6 +53,12 @@ def register_exception_handlers(app: FastAPI):
 
     @app.exception_handler(InvalidPriceError)
     async def invalid_price_handler(request: Request, exc: InvalidPriceError):
+        logger.warning(
+            "InvalidPriceError: %s %s → %s",
+            request.method,
+            request.url.path,
+            exc,
+        )
         return JSONResponse(
             status_code=HTTP_400_BAD_REQUEST,
             content={
@@ -49,6 +70,11 @@ def register_exception_handlers(app: FastAPI):
 
     @app.exception_handler(Exception)
     async def generic_exception_handler(request: Request, exc: Exception):
+        logger.exception(
+            "Unhandled exception on %s %s",
+            request.method,
+            request.url.path,
+        )
         return JSONResponse(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             content={

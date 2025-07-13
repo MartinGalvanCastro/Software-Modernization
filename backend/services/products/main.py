@@ -28,6 +28,6 @@ app = FastAPI(
 
 app.include_router(health_router)
 
-app.include_router(product_router, dependencies=[Depends(get_current_user())])
+app.include_router(product_router, dependencies=[Depends(get_current_user)])
 
 register_exception_handlers(app)

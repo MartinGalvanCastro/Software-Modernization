@@ -18,7 +18,8 @@ resource "aws_cognito_user_pool_client" "this" {
 
   explicit_auth_flows = [
     "ALLOW_USER_SRP_AUTH",
-    "ALLOW_REFRESH_TOKEN_AUTH"
+    "ALLOW_REFRESH_TOKEN_AUTH",
+    "ALLOW_USER_PASSWORD_AUTH"
   ]
 
   allowed_oauth_flows_user_pool_client = true
@@ -34,3 +35,5 @@ resource "aws_cognito_user_pool_domain" "this" {
   domain       = var.domain_prefix
   user_pool_id = aws_cognito_user_pool.this.id
 }
+
+

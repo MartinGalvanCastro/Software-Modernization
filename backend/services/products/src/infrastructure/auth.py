@@ -1,12 +1,17 @@
+import logging
 from fastapi import Security, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
 from jwt import PyJWKClient
 import time
 
-from src.config import settings
+from config import settings
 
-bearer_scheme = HTTPBearer()   # <-- use this in your Security dependency
+
+logger = logging.getLogger("product_service.auth")
+
+
+bearer_scheme = HTTPBearer()
 
 _jwk_client: PyJWKClient | None = None
 _last_fetch = 0
@@ -34,7 +39,8 @@ async def get_current_user(
             audience=settings.COGNITO_APP_CLIENT_ID,
             issuer=settings.cognito_issuer,
         )
-    except Exception:
+    except Exception as e:
+        logger.warning("Invalid or expired token: %s", e)
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",

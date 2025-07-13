@@ -5,15 +5,13 @@ on:
     branches:
       - main
     paths:
-      - 'services/products/**'
-      - 'services/sales/**'
-      - 'services/sellers/**'
+      - 'backend/services/**'
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION:    ${{ secrets.AWS_REGION }}
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-  ECR_PREFIX: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
-  ECS_CLUSTER: modernizacion-cluster
+  ECR_PREFIX:    ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+  ECS_CLUSTER:   modernizacion-cluster
 
 jobs:
   build-and-deploy:
@@ -23,7 +21,7 @@ jobs:
         service: [products, sales, sellers]
     defaults:
       run:
-        working-directory: services/${{ matrix.service }}
+        working-directory: backend/services/${{ matrix.service }}
 
     steps:
       - name: Checkout code (full history)
@@ -31,43 +29,47 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch main branch for diff
+      - name: Fetch main for diff
         run: git fetch --no-tags origin main
 
       - name: Detect changes in ${{ matrix.service }}
         id: changed
         run: |
-          echo "Comparing origin/main → $GITHUB_SHA"
-          if git diff --name-only origin/main $GITHUB_SHA \
-               | grep -q "^services/${{ matrix.service }}/"; then
-            echo "changed=true" >> $GITHUB_OUTPUT
+          echo "Comparing ${{ github.event.before }} → ${{ github.sha }}"
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
+               | grep -q "^backend/services/${{ matrix.service }}/"; then
+            echo "changed=true"  >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Skip build & deploy if no changes
         if: steps.changed.outputs.changed == 'false'
-        run: echo "No changes in services/${{ matrix.service }}; skipping."
+        run: echo "No changes in backend/services/${{ matrix.service }}; skipping."
 
       - name: Configure AWS credentials
         if: steps.changed.outputs.changed == 'true'
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/github-actions
+          aws-region:            ${{ env.AWS_REGION }}
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Log in to Amazon ECR
         if: steps.changed.outputs.changed == 'true'
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build & Push Docker image
+      - name: Build & Push Docker image to ECR
         if: steps.changed.outputs.changed == 'true'
         run: |
-          IMAGE_URI=${ECR_PREFIX}/${{ matrix.service }}:${GITHUB_SHA}
-          docker build -t $IMAGE_URI .
-          docker push $IMAGE_URI
-          docker tag $IMAGE_URI ${ECR_PREFIX}/${{ matrix.service }}:latest
-          docker push ${ECR_PREFIX}/${{ matrix.service }}:latest
+          IMAGE_SHA=${ECR_PREFIX}/${{ matrix.service }}:${GITHUB_SHA}
+          IMAGE_LATEST=${ECR_PREFIX}/${{ matrix.service }}:latest
+
+          docker build -t $IMAGE_SHA .
+          docker push $IMAGE_SHA
+
+          docker tag $IMAGE_SHA $IMAGE_LATEST
+          docker push $IMAGE_LATEST
 
       - name: Force new ECS deployment
         if: steps.changed.outputs.changed == 'true'

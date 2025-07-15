@@ -8,7 +8,7 @@ from src.domain.ports import ProductServicePort
 from src.infrastructure.adapters.http.schemas import ProductIn, ProductOut
 from src.infrastructure.di import get_product_service
 
-router = APIRouter(prefix="/api/v1/products", tags=["products"])
+router = APIRouter(prefix="/api/v1", tags=["products"])
 
 
 @router.get("/", response_model=List[ProductOut])

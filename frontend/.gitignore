@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+src/client/generated/products
+src/client/generated/sellers
+src/client/generated/sales
+src/client/generated/index.ts

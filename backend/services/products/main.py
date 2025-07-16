@@ -1,6 +1,23 @@
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
-# Existing FastAPI app creation remains unchanged
+from config import settings
+from src.infrastructure.adapters.http.health import router as health_router
+from src.infrastructure.middlewares.exception_handlers import (
+    register_exception_handlers,
+)
+from src.infrastructure.adapters.http.routers import router as products_router
+from src.infrastructure.logging import setup_logging
+from src.infrastructure.auth import get_current_user
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    setup_logging()
+    yield
+
+
 app = FastAPI(
     title=settings.APP_TITLE,
     description=settings.APP_DESCRIPTION,
@@ -9,7 +26,7 @@ app = FastAPI(
     root_path="/products",
 )
 
-# Add CORS middleware to allow all origins
+# Configure CORS to allow all origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,5 +36,6 @@ app.add_middleware(
 )
 
 app.include_router(health_router)
-app.include_router(product_router, dependencies=[Depends(get_current_user)])
+app.include_router(products_router, dependencies=[Depends(get_current_user)])
+
 register_exception_handlers(app)

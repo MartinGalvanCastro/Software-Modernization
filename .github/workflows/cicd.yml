@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [products, sales, sellers, gql]
+        service: [products, sales, sellers]
     defaults:
       run:
         working-directory: backend/services/${{ matrix.service }}

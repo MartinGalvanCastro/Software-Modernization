@@ -143,9 +143,6 @@ export const ProductosScreen: React.FC = () => {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-500">No hay productos registrados</p>
-                  <Button onClick={handleAdd} className="mt-4">
-                    Agregar primer producto
-                  </Button>
                 </div>
               )}
             </CardContent>

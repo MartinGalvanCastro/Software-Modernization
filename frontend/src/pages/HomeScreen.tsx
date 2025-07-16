@@ -3,12 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { useAuthContext } from '@/hooks/auth/useAuthContext';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 export const HomeScreen: React.FC = () => {
   const { username } = useAuthContext();
   const navigate = useNavigate();
   const appName = import.meta.env.VITE_APP_NAME || 'GestiónVentas Pro';
   const appDescription = import.meta.env.VITE_APP_DESCRIPTION || 'Sistema de gestión integral para tiendas y negocios';
+
+  // Set dynamic page title
+  useDocumentTitle('Inicio');
 
   const handleNavigateToVendedores = () => {
     navigate('/vendedores');

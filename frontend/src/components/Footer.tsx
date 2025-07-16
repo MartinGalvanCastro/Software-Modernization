@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, Code, Shield, Heart } from 'lucide-react';
+import { Database, Code, Shield } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const appName = import.meta.env.VITE_APP_NAME || 'GestiónVentas Pro';

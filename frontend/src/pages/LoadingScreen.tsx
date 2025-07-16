@@ -1,6 +1,9 @@
 import { type JSX } from 'react';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 export function LoadingScreen(): JSX.Element {
+  // Set dynamic page title
+  useDocumentTitle('Cargando...');
 
   return (
     <div

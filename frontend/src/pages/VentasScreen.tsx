@@ -14,8 +14,12 @@ import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useGetEntities } from '@/hooks/api/useGetEntities';
 import { getSales } from '@/client/API/SalesClient';
 import type { SaleOut } from '@/client/generated/sales/client';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 export const VentasScreen: React.FC = () => {
+  // Set dynamic page title
+  useDocumentTitle('Ventas');
+
   // API hooks for sales
   const {
     data: sales,

@@ -29,5 +29,10 @@
       ]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/client/generated/**/*",
+    "node_modules",
+    "dist"
+  ]
 }

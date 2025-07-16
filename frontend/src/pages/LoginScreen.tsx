@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthContext } from '@/hooks/auth/useAuthContext';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 // Types for the form
 interface LoginFormValues {
@@ -33,6 +34,9 @@ const initialValues: LoginFormValues = {
 export const LoginScreen: React.FC = () => {
   const { login, error, isAuthenticated } = useAuthContext();
   const navigate = useNavigate();
+
+  // Set dynamic page title
+  useDocumentTitle('Iniciar Sesión');
 
   // Navigate to home when authenticated
   useEffect(() => {

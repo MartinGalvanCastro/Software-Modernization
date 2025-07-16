@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -p tsconfig.build.json && vite build",
+    "build:no-check": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "serve": "npx serve dist",
     "generate:api": "node scripts/generate-api.cjs",
     "postinstall": "yarn generate:api"
   },

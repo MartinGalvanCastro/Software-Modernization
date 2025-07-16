@@ -1,0 +1,109 @@
+name: Deploy Frontend to S3
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  AWS_REGION: 'us-east-1'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Fetch environment variables from SSM
+        id: ssm
+        run: |
+          echo "Fetching environment variables from SSM Parameter Store..."
+          
+          # Fetch all parameters at once
+          ALB_DNS_NAME=$(aws ssm get-parameter --name "/modernizacion/frontend/ALB_DNS_NAME" --query "Parameter.Value" --output text)
+          VITE_API_BASE_URL="https://${ALB_DNS_NAME}"
+          VITE_COGNITO_USER_POOL_ID=$(aws ssm get-parameter --name "/modernizacion/frontend/VITE_COGNITO_USER_POOL_ID" --query "Parameter.Value" --output text)
+          VITE_COGNITO_APP_CLIENT_ID=$(aws ssm get-parameter --name "/modernizacion/frontend/VITE_COGNITO_APP_CLIENT_ID" --query "Parameter.Value" --output text)
+          VITE_APP_NAME=$(aws ssm get-parameter --name "/modernizacion/frontend/VITE_APP_NAME" --query "Parameter.Value" --output text)
+          VITE_APP_DESCRIPTION=$(aws ssm get-parameter --name "/modernizacion/frontend/VITE_APP_DESCRIPTION" --query "Parameter.Value" --output text)
+          VITE_APP_VERSION=$(aws ssm get-parameter --name "/modernizacion/frontend/VITE_APP_VERSION" --query "Parameter.Value" --output text)
+          S3_BUCKET_NAME=$(aws ssm get-parameter --name "/modernizacion/frontend/S3_BUCKET_NAME" --query "Parameter.Value" --output text)
+          S3_WEBSITE_ENDPOINT=$(aws ssm get-parameter --name "/modernizacion/frontend/S3_WEBSITE_ENDPOINT" --query "Parameter.Value" --output text)
+          
+          # Export for subsequent steps
+          echo "ALB_DNS_NAME=${ALB_DNS_NAME}" >> $GITHUB_ENV
+          echo "VITE_API_BASE_URL=${VITE_API_BASE_URL}" >> $GITHUB_ENV
+          echo "VITE_COGNITO_USER_POOL_ID=${VITE_COGNITO_USER_POOL_ID}" >> $GITHUB_ENV
+          echo "VITE_COGNITO_APP_CLIENT_ID=${VITE_COGNITO_APP_CLIENT_ID}" >> $GITHUB_ENV
+          echo "VITE_APP_NAME=${VITE_APP_NAME}" >> $GITHUB_ENV
+          echo "VITE_APP_DESCRIPTION=${VITE_APP_DESCRIPTION}" >> $GITHUB_ENV
+          echo "VITE_APP_VERSION=${VITE_APP_VERSION}" >> $GITHUB_ENV
+          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_ENV
+          echo "S3_WEBSITE_ENDPOINT=${S3_WEBSITE_ENDPOINT}" >> $GITHUB_ENV
+          
+          # API URLs for yarn install
+          echo "PRODUCTS_API_URL=https://${ALB_DNS_NAME}/products/docs" >> $GITHUB_ENV
+          echo "SELLERS_API_URL=https://${ALB_DNS_NAME}/sellers/docs" >> $GITHUB_ENV
+          echo "SALES_API_URL=https://${ALB_DNS_NAME}/sales/docs" >> $GITHUB_ENV
+          
+      - name: Install dependencies
+        working-directory: ./frontend
+        env:
+          # API URLs needed during yarn install (from SSM)
+          PRODUCTS_API_URL: ${{ env.PRODUCTS_API_URL }}
+          SELLERS_API_URL: ${{ env.SELLERS_API_URL }}
+          SALES_API_URL: ${{ env.SALES_API_URL }}
+        run: yarn install --frozen-lockfile
+        
+      - name: Create environment file for build
+        working-directory: ./frontend
+        run: |
+          echo "# All values fetched from SSM Parameter Store" > .env.production
+          echo "VITE_APP_NAME=${{ env.VITE_APP_NAME }}" >> .env.production
+          echo "VITE_APP_DESCRIPTION=${{ env.VITE_APP_DESCRIPTION }}" >> .env.production
+          echo "VITE_APP_VERSION=${{ env.VITE_APP_VERSION }}" >> .env.production
+          echo "VITE_API_BASE_URL=${{ env.VITE_API_BASE_URL }}" >> .env.production
+          echo "VITE_AWS_REGION=${{ env.AWS_REGION }}" >> .env.production
+          echo "VITE_COGNITO_USER_POOL_ID=${{ env.VITE_COGNITO_USER_POOL_ID }}" >> .env.production
+          echo "VITE_COGNITO_APP_CLIENT_ID=${{ env.VITE_COGNITO_APP_CLIENT_ID }}" >> .env.production
+
+
+      - name: Build application
+        working-directory: ./frontend
+        run: yarn build
+
+      - name: Deploy to S3
+        if: github.ref == 'refs/heads/main'
+        working-directory: ./frontend
+        run: |
+          aws s3 sync dist/ s3://${{ env.S3_BUCKET_NAME }} --delete --exact-timestamps
+
+      - name: Deployment Summary
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "🚀 Frontend deployed successfully!"
+          echo "📦 S3 Bucket: ${{ env.S3_BUCKET_NAME }}"
+          echo "🌐 Website URL: http://${{ env.S3_WEBSITE_ENDPOINT }}"

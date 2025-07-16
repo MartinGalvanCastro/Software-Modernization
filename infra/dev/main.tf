@@ -177,12 +177,20 @@ module "ecs_service_sellers" {
 }
 
 
+
+
 ######
-# GQL Modules
+# Frontend Modules
 ######
 
-module "ecr_gql" {
-  source                = "../modules/ecr"
-  name                  = "gql"
-  lifecycle_policy_json = jsonencode({ rules = [{ rulePriority = 1, description = "Keep last 10 images", selection = { tagStatus = "any", countType = "imageCountMoreThan", countNumber = 10 }, action = { type = "expire" } }] })
+# Random suffix for S3 bucket name to ensure uniqueness
+resource "random_string" "bucket_suffix" {
+  length  = 8
+  special = false
+  upper   = false
+}
+
+module "s3_static_website" {
+  source      = "../modules/s3-static-website"
+  bucket_name = "modernizacion-frontend-${random_string.bucket_suffix.result}"
 }

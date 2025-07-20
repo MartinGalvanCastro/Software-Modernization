@@ -1,5 +1,5 @@
 import { type SellerIn, type SellerOut } from "../generated/sellers/client";
-import { get, post, put, del } from 'aws-amplify/api';
+import { get, post, put, del } from '@aws-amplify/api-rest';
 import type { CreateParam, UpdateParam, DeleteParam } from "@/types";
 
 const API_NAME = 'GestorAPI';
@@ -19,7 +19,7 @@ export async function createSellers({newEntity}:CreateParam<SellerIn>): Promise<
     path: API_PATH,
     options: {
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newEntity)
+      body: JSON.parse(JSON.stringify(newEntity))
     }
   });
   return ((await response).body.json()) as unknown as SellerOut;
@@ -32,7 +32,7 @@ export async function updateSellers({id, updatedEntity}: UpdateParam<'id',Seller
     path: `${API_PATH}/${id}`,
     options: {
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedEntity)
+      body: JSON.parse(JSON.stringify(updatedEntity))
     }
   });
   return ((await response).body.json()) as unknown as SellerOut;

@@ -36,9 +36,10 @@ class SellerModel(Model):
             host = settings.DYNAMODB_ENDPOINT_URL
 
     # Primary key
-    code       = UnicodeAttribute(hash_key=True)
+    id         = UnicodeAttribute(hash_key=True)
 
     # Non‐key attributes
+    code       = UnicodeAttribute()
     name       = UnicodeAttribute()
     email      = UnicodeAttribute()
     created_at = UTCDateTimeAttribute()
@@ -61,6 +62,7 @@ class DynamoDBSellerRepo(SellerRepositoryPort):
 
     async def get_by_code(self, code: UUID) -> Optional[Seller]:
         try:
+            # Since code and id contain the same value, we can query by id (the hash key)
             item = SellerModel.get(hash_key=str(code))
             return _to_domain(item)
         except SellerModel.DoesNotExist:
@@ -82,6 +84,7 @@ class DynamoDBSellerRepo(SellerRepositoryPort):
         new_code = uuid4()
 
         record = SellerModel(
+            id=str(new_code),  # Use the UUID as the id (primary key)
             code=str(new_code),
             name=name,
             email=email,
@@ -101,6 +104,7 @@ class DynamoDBSellerRepo(SellerRepositoryPort):
     async def update(self, code: UUID, name: str, email: str) -> Seller:
         # Fetch existing
         try:
+            # Since code and id contain the same value, we can query by id (the hash key)
             item = SellerModel.get(hash_key=str(code))
         except SellerModel.DoesNotExist:
             raise NotFoundError(code)
@@ -126,6 +130,7 @@ class DynamoDBSellerRepo(SellerRepositoryPort):
 
     async def delete(self, code: UUID) -> None:
         try:
+            # Since code and id contain the same value, we can query by id (the hash key)
             item = SellerModel.get(hash_key=str(code))
             item.delete()
         except SellerModel.DoesNotExist:

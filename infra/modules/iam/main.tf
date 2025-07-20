@@ -39,21 +39,38 @@ resource "aws_iam_policy" "dynamo_crud" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      for tbl in var.dynamodb_tables : {
+      {
         Effect   = "Allow"
         Action   = [
           "dynamodb:DescribeTable",
-          "dynamodb:GetItem",
+          "dynamodb:GetItem", 
           "dynamodb:PutItem",
           "dynamodb:UpdateItem",
           "dynamodb:DeleteItem",
           "dynamodb:Query",
           "dynamodb:Scan"
         ]
-        Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${tbl}"
+        Resource = [
+          for tbl in var.dynamodb_tables : "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${tbl}"
+        ]
+      },
+      {
+        Effect   = "Allow"
+        Action   = [
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ]
+        Resource = [
+          for tbl in var.dynamodb_tables : "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${tbl}/index/*"
+        ]
       }
     ]
   })
+
+  # Force policy update by adding a lifecycle rule
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "task_dynamo_attach" {

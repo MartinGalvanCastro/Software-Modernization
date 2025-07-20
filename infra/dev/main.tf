@@ -145,7 +145,7 @@ module "ecr_sellers" {
 module "dynamodb_sellers" {
   source   = "../modules/dynamodb"
   name     = "Sellers"
-  hash_key = "id"
+  hash_key = "code"
   global_secondary_indexes = [{
     name            = "email-index"
     hash_key        = "email"

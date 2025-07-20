@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,11 +18,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { extractErrorMessage } from '@/lib/errorUtils';
 
 export interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'number' | 'textarea' | 'select';
+  type: 'text' | 'email' | 'number' | 'textarea' | 'select' | 'date';
   required?: boolean;
   placeholder?: string;
   options?: { value: string; label: string }[];
@@ -40,6 +42,7 @@ interface GenericModalProps {
   onClose: () => void;
   isSubmitting: boolean;
   submitButtonText?: string;
+  successMessage?: string;
 }
 
 export function GenericModal({
@@ -49,13 +52,15 @@ export function GenericModal({
   onSubmit,
   onClose,
   isSubmitting,
-  submitButtonText = 'Guardar'
+  submitButtonText = 'Guardar',
+  successMessage
 }: GenericModalProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>(initialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setFormData(initialData);
+    setErrors({});
   }, [initialData]);
 
   const validateField = (field: FormField, value: unknown): string => {
@@ -122,14 +127,21 @@ export function GenericModal({
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      toast.error('Por favor corrige los errores en el formulario.');
       return;
     }
 
     try {
       await onSubmit(formData);
+      
+      // Show success toast and close modal
+      toast.success(successMessage || 'Operación realizada exitosamente.');
+      onClose();
+      
     } catch (error) {
-      // Handle submission error
+      // Handle submission error - preserve form data (don't close modal)
       console.error('Form submission error:', error);
+      toast.error(extractErrorMessage(error));
     }
   };
 
@@ -177,7 +189,10 @@ export function GenericModal({
             type={field.type}
             value={stringValue}
             onChange={(e) => {
-              const newValue = field.type === 'number' ? Number(e.target.value) || 0 : e.target.value;
+              let newValue: string | number = e.target.value;
+              if (field.type === 'number') {
+                newValue = Number(e.target.value) || 0;
+              }
               handleInputChange(field.name, newValue);
             }}
             placeholder={field.placeholder}

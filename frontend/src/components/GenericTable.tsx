@@ -30,6 +30,7 @@ export interface GenericTableProps<T> {
   editFormFields?: FormField[];
   getItemId: (item: T) => string | number;
   getItemName?: (item: T) => string; // For delete confirmation
+  entityName?: string; // For generic success messages
   loading?: boolean;
   addButtonText?: string;
 }
@@ -59,6 +60,7 @@ export function GenericTable<T extends { id: string | number }>({
   editFormFields = [],
   getItemId,
   getItemName,
+  entityName = 'elemento',
   loading = false,
   addButtonText = 'Agregar'
 }: GenericTableProps<T>) {
@@ -269,6 +271,7 @@ export function GenericTable<T extends { id: string | number }>({
             setSelectedItem(null);
           }}
           isSubmitting={isSubmitting}
+          successMessage={`${entityName.charAt(0).toUpperCase() + entityName.slice(1)} eliminado exitosamente.`}
         />
       )}
     </>

@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -7,6 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Trash2, AlertTriangle } from 'lucide-react';
+import { extractErrorMessage } from '@/lib/errorUtils';
 
 interface ConfirmDeleteModalProps {
   title: string;
@@ -16,6 +18,7 @@ interface ConfirmDeleteModalProps {
   isSubmitting: boolean;
   confirmButtonText?: string;
   cancelButtonText?: string;
+  successMessage?: string;
 }
 
 export function ConfirmDeleteModal({
@@ -25,13 +28,20 @@ export function ConfirmDeleteModal({
   onClose,
   isSubmitting,
   confirmButtonText = 'Eliminar',
-  cancelButtonText = 'Cancelar'
+  cancelButtonText = 'Cancelar',
+  successMessage
 }: ConfirmDeleteModalProps) {
   const handleConfirm = async () => {
     try {
       await onConfirm();
+      
+      // Show success toast and close modal
+      toast.success(successMessage || 'Elemento eliminado exitosamente.');
+      onClose();
+      
     } catch (error) {
       console.error('Delete confirmation error:', error);
+      toast.error(extractErrorMessage(error));
     }
   };
 

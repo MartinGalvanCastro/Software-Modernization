@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,13 +12,24 @@ import {
 } from '@/components/ui/table';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useGetEntities } from '@/hooks/api/useGetEntities';
-import { getProducts } from '@/client/API/ProductsClient';
-import type { ProductOut } from '@/client/generated/products/client';
+import { useCreateEntity } from '@/hooks/api/useCreateEntity';
+import { useUpdateEntity } from '@/hooks/api/useUpdateEntity';
+import { useDeleteEntity } from '@/hooks/api/useDeleteEntity';
+import { getProducts, createProduct, updateProduct, deleteProduct } from '@/client/API/ProductsClient';
+import { AddModal, EditModal } from '@/components/forms';
+import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
+import type { ProductOut, ProductIn } from '@/client/generated/products/client';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 export const ProductosScreen: React.FC = () => {
   // Set dynamic page title
   useDocumentTitle('Productos');
+
+  // Modal state management
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [currentProduct, setCurrentProduct] = useState<ProductOut | null>(null);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
 
   // API hooks for products
   const {
@@ -30,18 +41,73 @@ export const ProductosScreen: React.FC = () => {
     getFn: getProducts,
   });
 
+  // Mutation hooks
+  const createMutation = useCreateEntity({
+    queryKey: 'products',
+    createFn: createProduct,
+  });
+
+  const updateMutation = useUpdateEntity({
+    queryKey: 'products',
+    updateFn: updateProduct,
+  });
+
+  const deleteMutation = useDeleteEntity({
+    queryKey: 'products',
+    deleteFn: deleteProduct,
+  });
+
+  // Event handlers
   const handleAdd = () => {
-    // TODO: Implement add logic
+    setModalMode('create');
+    setCurrentProduct(null);
+    setIsFormModalOpen(true);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleEdit = (_product: ProductOut) => {
-    // TODO: Implement edit logic
+  const handleEdit = (product: ProductOut) => {
+    setModalMode('edit');
+    setCurrentProduct(product);
+    setIsFormModalOpen(true);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleDelete = (_product: ProductOut) => {
-    // TODO: Implement delete logic
+  const handleDelete = (product: ProductOut) => {
+    setCurrentProduct(product);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleFormSubmit = async (formData: Record<string, unknown>) => {
+    const productData: ProductIn = {
+      name: formData.name as string,
+      description: formData.description as string,
+      price: Number(formData.price), // Price is a number, not Price type
+    };
+
+    if (modalMode === 'create') {
+      await createMutation.mutateAsync({ newEntity: productData });
+    } else if (currentProduct) {
+      await updateMutation.mutateAsync({ 
+        code: currentProduct.code, 
+        updatedEntity: productData 
+      });
+    }
+    
+    // Don't close modal here - let GenericModal handle success feedback and auto-close
+    // setIsFormModalOpen(false);
+    // setCurrentProduct(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (currentProduct) {
+      await deleteMutation.mutateAsync({ code: currentProduct.code });
+      setIsDeleteModalOpen(false);
+      setCurrentProduct(null);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsFormModalOpen(false);
+    setIsDeleteModalOpen(false);
+    setCurrentProduct(null);
   };
 
   if (isLoading) {
@@ -153,6 +219,41 @@ export const ProductosScreen: React.FC = () => {
           </Card>
         </div>
       </main>
+
+      {/* Add Modal */}
+      {isFormModalOpen && modalMode === 'create' && (
+        <AddModal
+          entityType="product"
+          isOpen={isFormModalOpen}
+          onSubmit={handleFormSubmit}
+          onClose={handleCloseModal}
+          isSubmitting={createMutation.isPending}
+        />
+      )}
+
+      {/* Edit Modal */}
+      {isFormModalOpen && modalMode === 'edit' && currentProduct && (
+        <EditModal
+          entityType="product"
+          isOpen={isFormModalOpen}
+          entityData={currentProduct}
+          onSubmit={handleFormSubmit}
+          onClose={handleCloseModal}
+          isSubmitting={updateMutation.isPending}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && currentProduct && (
+        <ConfirmDeleteModal
+          title="Confirmar eliminación"
+          message={`¿Estás seguro de que quieres eliminar el producto "${currentProduct.name}"? Esta acción no se puede deshacer.`}
+          onConfirm={handleDeleteConfirm}
+          onClose={handleCloseModal}
+          isSubmitting={deleteMutation.isPending}
+          successMessage={`Producto "${currentProduct.name}" eliminado exitosamente.`}
+        />
+      )}
     </div>
   );
 };

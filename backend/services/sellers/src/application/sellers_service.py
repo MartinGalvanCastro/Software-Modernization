@@ -43,18 +43,8 @@ class SellerService(SellerServicePort):
         if existing is not None:
             raise DuplicateSellerError("email", email)
 
-        # prepare domain entity
-        now = datetime.now(timezone.utc)
-        new_seller = Seller(
-            code=uuid4(),
-            name=name,
-            email=email,
-            created_at=now,
-            updated_at=now,
-        )
-
         # persist & return the fully‐populated Seller
-        return await self._repo.create(name=new_seller.name, email=new_seller.email)
+        return await self._repo.create(name=name, email=email)
 
     async def update_seller(self, code: UUID, name: str, email: str) -> Seller:
         """

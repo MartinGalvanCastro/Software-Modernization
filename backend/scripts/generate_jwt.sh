@@ -1,8 +1,7 @@
-USERNAME=newuser@example.com
-PASSWORD=SuperSecret123!
+USERNAME=testuser@example.com
+PASSWORD=P@ssw0rd123!
 AWS_REGION=us-east-1
-COGNITO_APP_CLIENT_ID=2alun9q1f53bajhtm8g5k2a6mi
-COGNITO_USERPOOL_ID=us-east-1_Zwx08CqYK
+COGNITO_APP_CLIENT_ID=1psr821qe4k7hl7aa0rsjo007h
 
 TOKEN=$(aws cognito-idp initiate-auth \
   --region $AWS_REGION \

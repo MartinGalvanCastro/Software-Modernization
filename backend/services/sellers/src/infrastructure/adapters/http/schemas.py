@@ -29,6 +29,7 @@ class SellerOut(BaseModel):
     Outgoing schema for seller responses, with camelCase aliases.
     """
     id: UUID = Field(..., description="Unique seller identifier (UUID)")
+    code: str
     name: str
     email: str
     created_at: datetime

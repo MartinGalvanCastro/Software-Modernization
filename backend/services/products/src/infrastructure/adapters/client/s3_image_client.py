@@ -25,7 +25,7 @@ class S3ImageClient(ImageClientPort):
                 Fileobj=file_obj,
                 Bucket=self.bucket_name,
                 Key=filename,
-                ExtraArgs={"ContentType": content_type, "ACL": "public-read"}
+                ExtraArgs={"ContentType": content_type}
             )
             url = f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{filename}"
             return url

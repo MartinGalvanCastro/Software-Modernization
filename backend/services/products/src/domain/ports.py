@@ -37,7 +37,8 @@ class ProductRepositoryPort(ABC):
         self,
         name: str,
         description: str,
-        price: Decimal
+        price: Decimal,
+        image_url: str
     ) -> Product:
         """
         Persist a new product in the data store, generating its UUID and timestamps.
@@ -50,7 +51,8 @@ class ProductRepositoryPort(ABC):
         code: UUID,
         name: str,
         description: str,
-        price: Decimal
+        price: Decimal,
+        image_url: str
     ) -> Product:
         """
         Update an existing product’s attributes, and refresh its updated_at timestamp.
@@ -92,14 +94,14 @@ class ProductServicePort(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def create_product(self, name: str, description: str, price: Decimal) -> Product:
+    async def create_product(self, name: str, description: str, price: Decimal, image_url: str) -> Product:
         """
         Business use-case: create a new product after applying domain rules.
         """
         raise NotImplementedError()
 
     @abstractmethod
-    async def update_product(self, code: UUID, name: str, description: str, price: Decimal) -> Product:
+    async def update_product(self, code: UUID, name: str, description: str, price: Decimal, image_url: str) -> Product:
         """
         Business use-case: update an existing product's details.
         """

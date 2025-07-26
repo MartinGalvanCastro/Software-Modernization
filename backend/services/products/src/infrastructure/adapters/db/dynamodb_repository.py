@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from decimal import Decimal
+from email.mime import image
 from typing import List, Optional
 from uuid import UUID, uuid4
 
@@ -42,6 +43,7 @@ class ProductModel(Model):
     price       = NumberAttribute()
     created_at  = UnicodeAttribute()
     updated_at  = UnicodeAttribute()
+    image_url   = UnicodeAttribute()
 
     name_index = NameIndex()
 
@@ -74,7 +76,8 @@ class DynamoDBProductRepo(ProductRepositoryPort):
         self,
         name: str,
         description: str,
-        price: Decimal
+        price: Decimal,
+        image_url: str
     ) -> Product:
         now = datetime.now(timezone.utc)
         new_code = uuid4()
@@ -85,6 +88,7 @@ class DynamoDBProductRepo(ProductRepositoryPort):
             price=float(price),
             created_at=now.isoformat(),
             updated_at=now.isoformat(),
+            image_url=image_url
         )
         obj.save()
         return Product(
@@ -94,6 +98,7 @@ class DynamoDBProductRepo(ProductRepositoryPort):
             price=Price(amount=price),
             created_at=now,
             updated_at=now,
+            image_url=image_url
         )
 
     async def update(
@@ -101,7 +106,8 @@ class DynamoDBProductRepo(ProductRepositoryPort):
         code: UUID,
         name: str,
         description: str,
-        price: Decimal
+        price: Decimal,
+        image_url: str
     ) -> Product:
         try:
             item = ProductModel.get(hash_key=str(code))
@@ -112,6 +118,7 @@ class DynamoDBProductRepo(ProductRepositoryPort):
         item.name        = name
         item.description = description
         item.price       = float(price)
+        item.image_url   = image_url
         item.updated_at  = now.isoformat()
         item.save()
 
@@ -122,6 +129,7 @@ class DynamoDBProductRepo(ProductRepositoryPort):
             price=Price(amount=price),
             created_at=datetime.fromisoformat(item.created_at),
             updated_at=now,
+            image_url=item.image_url,
         )
 
     async def delete(self, code: UUID) -> None:
@@ -144,4 +152,5 @@ def _to_domain(item: ProductModel) -> Product:
         price=Price(amount=Decimal(item.price)),
         created_at=datetime.fromisoformat(item.created_at),
         updated_at=datetime.fromisoformat(item.updated_at),
+        image_url=item.image_url,
     )

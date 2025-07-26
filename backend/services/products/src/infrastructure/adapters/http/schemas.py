@@ -17,6 +17,7 @@ class ProductIn(BaseModel):
     name: str = Field(..., description="Name of the product")
     description: str = Field(..., description="Product description")
     price: Decimal = Field(..., gt=0, description="Price in USD, must be > 0")
+    image_url: str = Field(..., description="URL of the product image")
 
     @field_validator("price")
     def check_price_positive(cls, v: Decimal) -> Decimal:
@@ -46,6 +47,7 @@ class ProductOut(BaseModel):
     price: Decimal = Field(..., description="Price in USD with two decimals")
     created_at: datetime
     updated_at: datetime
+    image_url: str
 
     model_config = {
         "alias_generator": to_camel,
@@ -64,4 +66,5 @@ class ProductOut(BaseModel):
             price=product.price.amount,
             created_at=product.created_at,
             updated_at=product.updated_at,
+            image_url=product.image_url,
         )

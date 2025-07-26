@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional
 from uuid import UUID, uuid4
@@ -34,21 +34,24 @@ class Product:
     name: str
     description: str
     price: Price
+    image_url: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    
 
     @staticmethod
-    def new(name: str, description: str, price: Price) -> "Product":
+    def new(name: str, description: str, price: Price, image_url: str) -> "Product":
         """
         Factory method to create a new Product with a generated UUID
         and current timestamps.
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         return Product(
             code=uuid4(),
             name=name,
             description=description,
             price=price,
+            image_url=image_url,
             created_at=now,
             updated_at=now,
         )

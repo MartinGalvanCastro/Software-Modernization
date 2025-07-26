@@ -29,7 +29,8 @@ class ProductService(ProductServicePort):
         self,
         name: str,
         description: str,
-        price: Decimal
+        price: Decimal,
+        image_url: str
     ) -> Product:
         Price(price)  # raises InvalidPriceError if <= 0
 
@@ -41,6 +42,7 @@ class ProductService(ProductServicePort):
             name=name,
             description=description,
             price=price,
+            image_url=image_url
         )
 
     async def update_product(
@@ -48,7 +50,8 @@ class ProductService(ProductServicePort):
         code: UUID,
         name: str,
         description: str,
-        price: Decimal
+        price: Decimal,
+        image_url: str
     ) -> Product:
         existing = await self._repo.get_by_code(code)
         if existing is None:
@@ -61,6 +64,7 @@ class ProductService(ProductServicePort):
             name=name,
             description=description,
             price=price,
+            image_url=image_url
         )
 
     async def delete_product(self, code: UUID) -> None:

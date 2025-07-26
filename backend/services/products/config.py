@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     COGNITO_USERPOOL_ID: str
     COGNITO_APP_CLIENT_ID: str
+    PRODUCT_IMAGES_BUCKET:str
 
     @property
     def cognito_issuer(self) -> str:

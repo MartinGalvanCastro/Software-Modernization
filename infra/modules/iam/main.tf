@@ -77,3 +77,27 @@ resource "aws_iam_role_policy_attachment" "task_dynamo_attach" {
   role       = aws_iam_role.ecs_task.name
   policy_arn = aws_iam_policy.dynamo_crud.arn
 }
+
+resource "aws_iam_policy" "s3_product_images_upload" {
+  name        = "${var.role_name}-s3-product-images-upload"
+  description = "Allow ECS tasks to upload product images to S3"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:PutObject",
+          "s3:PutObjectAcl"
+        ],
+        Resource = "${var.product_images_bucket_arn}/*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "task_s3_images_attach" {
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = aws_iam_policy.s3_product_images_upload.arn
+}

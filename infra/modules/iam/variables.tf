@@ -13,3 +13,8 @@ variable "dynamodb_tables" {
   description = "List of DynamoDB table names that tasks need access to"
   default     = []
 }
+
+variable "product_images_bucket_arn" {
+  type        = string
+  description = "ARN of the S3 bucket for product images"
+}

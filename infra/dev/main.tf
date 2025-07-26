@@ -28,6 +28,7 @@ module "iam" {
     module.dynamodb_sales.name,
     module.dynamodb_sellers.name,
   ]
+  product_images_bucket_arn = module.product_images_bucket.bucket_arn
 }
 
 module "networking" {
@@ -83,7 +84,13 @@ module "ecs_service_products" {
     DYNAMODB_ENDPOINT_URL = "https://dynamodb.${var.aws_region}.amazonaws.com"
     COGNITO_USERPOOL_ID   = module.cognito.user_pool_id
     COGNITO_APP_CLIENT_ID = module.cognito.user_pool_client_id
+    PRODUCT_IMAGES_BUCKET = module.product_images_bucket.bucket_name
   }
+}
+
+module "product_images_bucket" {
+  source      = "../modules/s3-image"
+  bucket_name = "modernizacion-product-images-${random_string.bucket_suffix.result}"
 }
 
 

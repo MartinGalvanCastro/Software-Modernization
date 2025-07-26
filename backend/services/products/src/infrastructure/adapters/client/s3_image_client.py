@@ -9,7 +9,7 @@ class S3ImageClient(ImageClientPort):
     Implements ImageClientPort.
     """
     def __init__(self, bucket_name: str):
-        self.bucket_name = bucket_name
+        self.bucket_name = settings.PRODUCT_IMAGES_BUCKET
         self.region_name = settings.AWS_REGION
         self.s3_client = boto3.client(
             "s3",

@@ -43,7 +43,8 @@ class SellerOut(BaseModel):
     @classmethod
     def from_domain(cls, seller: Seller) -> "SellerOut":
         return cls(
-            id=seller.id,
+            id=seller.code,
+            code=str(seller.code),
             name=seller.name,
             email=seller.email,
             created_at=seller.created_at,

@@ -12,12 +12,12 @@ class ProductIn(BaseModel):
     """
     Incoming schema for creating a product.
     'code' is not provided by the client—it's generated in the domain.
+    Image file is uploaded separately via multipart/form-data.
     """
 
     name: str = Field(..., description="Name of the product")
     description: str = Field(..., description="Product description")
     price: Decimal = Field(..., gt=0, description="Price in USD, must be > 0")
-    image_url: str = Field(..., description="URL of the product image")
 
     @field_validator("price")
     def check_price_positive(cls, v: Decimal) -> Decimal:
@@ -33,6 +33,7 @@ class ProductIn(BaseModel):
             name=self.name,
             description=self.description,
             price=Price(amount=self.price),
+            image_url=""
         )
 
 

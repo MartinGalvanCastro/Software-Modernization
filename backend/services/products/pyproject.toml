@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "boto3>=1.39.14",
     "cryptography>=45.0.5",
     "fastapi>=0.116.0",
     "mypy>=1.16.1",
@@ -12,6 +13,7 @@ dependencies = [
     "pydantic-settings>=2.10.1",
     "pyjwt>=2.10.1",
     "pynamodb>=6.1.0",
+    "python-multipart>=0.0.20",
 ]
 
 [tool.mypy]

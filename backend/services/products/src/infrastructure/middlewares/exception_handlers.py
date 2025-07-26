@@ -11,12 +11,29 @@ from src.domain.exceptions import (
     DuplicateProductError,
     InvalidPriceError,
     NotFoundError,
+    ImageUploadError,
 )
 
 logger = logging.getLogger("product_service.exceptions")
 
 
 def register_exception_handlers(app: FastAPI):
+    @app.exception_handler(ImageUploadError)
+    async def image_upload_error_handler(request: Request, exc: ImageUploadError):
+        logger.error(
+            "ImageUploadError: %s %s → %s",
+            request.method,
+            request.url.path,
+            exc,
+        )
+        return JSONResponse(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "title": "Image Upload Failed",
+                "detail": str(exc),
+                "status": HTTP_500_INTERNAL_SERVER_ERROR,
+            },
+        )
     @app.exception_handler(NotFoundError)
     async def not_found_handler(request: Request, exc: NotFoundError):
         logger.warning(

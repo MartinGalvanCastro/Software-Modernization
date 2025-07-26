@@ -14,6 +14,7 @@ class NotFoundError(DomainError):
         self.identifier = identifier
 
 
+
 class DuplicateProductError(DomainError):
     def __init__(self, field: str, value: str) -> None:
         super().__init__(f"Product with {field!r}={value!r} already exists")
@@ -25,3 +26,10 @@ class InvalidPriceError(DomainError):
     def __init__(self, price: Decimal) -> None:
         super().__init__(f"Invalid price: {price!r}. Price must be > 0")
         self.price = price
+
+
+
+class ImageUploadError(DomainError):
+    def __init__(self, detail: str) -> None:
+        super().__init__(f"Image upload failed: {detail}")
+        self.detail = detail

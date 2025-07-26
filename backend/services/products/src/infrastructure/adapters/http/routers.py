@@ -1,7 +1,8 @@
 from uuid import UUID
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form
+import json
 
 from src.domain.exceptions import DuplicateProductError, InvalidPriceError, NotFoundError
 from src.domain.ports import ProductServicePort
@@ -34,15 +35,22 @@ async def get_product(
 
 @router.post("/", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
 async def create_product(
-    payload: ProductIn,
+    product: str = Form(...),
+    image: UploadFile = File(...),
     service: ProductServicePort = Depends(get_product_service),
 ):
     """Create a new product."""
+    # Parse and validate JSON
+    product_data = json.loads(product)
+    payload = ProductIn(**product_data)
 
     created = await service.create_product(
         name=payload.name,
         description=payload.description,
         price=payload.price,
+        image_file=image.file,
+        image_filename=image.filename,
+        image_content_type=image.content_type
     )
     return ProductOut.from_domain(created)
 
@@ -50,16 +58,23 @@ async def create_product(
 @router.put("/{code}", response_model=ProductOut)
 async def update_product(
     code: UUID,
-    payload: ProductIn,
+    product: str = Form(...),
+    image: UploadFile = File(...),
     service: ProductServicePort = Depends(get_product_service),
 ):
     """Update an existing product."""
+    # Parse and validate JSON
+    product_data = json.loads(product)
+    payload = ProductIn(**product_data)
 
     updated = await service.update_product(
         code=code,
         name=payload.name,
         description=payload.description,
         price=payload.price,
+        image_file=image.file,
+        image_filename=image.filename,
+        image_content_type=image.content_type
     )
     return ProductOut.from_domain(updated)
 

@@ -113,3 +113,16 @@ class ProductServicePort(ABC):
         Business use-case: delete a product by its UUID code.
         """
         raise NotImplementedError()
+    
+
+class ImageClientPort(ABC):
+    """
+    Outbound port: defines operations for uploading product images
+    """
+
+    @abstractmethod
+    def upload_image(self, file_obj, filename: str, content_type: str) -> str:
+        """
+        Uploads an image file to S3 and returns its public URL.
+        """
+        pass

@@ -3,7 +3,7 @@ import { get, post, put, del } from '@aws-amplify/api-rest';
 import type { CreateParam, UpdateParam, DeleteParam } from "@/types";
 
 const API_NAME = 'GestorAPI';
-const API_PATH = 'sellers/api/v1';
+const API_PATH = '/sellers/api/v1';
 
 // GET /Sellers
 export async function getSellers(): Promise<SellerOut[]> {

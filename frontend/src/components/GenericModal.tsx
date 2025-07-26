@@ -23,7 +23,8 @@ import { extractErrorMessage } from '@/lib/errorUtils';
 export interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'number' | 'textarea' | 'select' | 'date';
+  type: 'text' | 'email' | 'number' | 'textarea' | 'select' | 'date' | 'file';
+  accept?: string; // For file inputs
   required?: boolean;
   placeholder?: string;
   options?: { value: string; label: string }[];
@@ -180,6 +181,20 @@ export function GenericModal({
               ))}
             </SelectContent>
           </Select>
+        );
+
+      case 'file':
+        return (
+          <Input
+            id={field.name}
+            type="file"
+            accept={field.accept}
+            onChange={(e) => {
+              const file = e.target.files?.[0] || null;
+              handleInputChange(field.name, file);
+            }}
+            className={error ? 'border-red-500' : ''}
+          />
         );
 
       default:

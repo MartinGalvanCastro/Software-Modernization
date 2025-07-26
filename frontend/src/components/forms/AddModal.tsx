@@ -32,8 +32,10 @@ export function AddModal({
           initialData[field.name] = 0;
           break;
         case 'date':
-          // Set today's date as default for date fields
           initialData[field.name] = new Date().toISOString().split('T')[0];
+          break;
+        case 'file':
+          initialData[field.name] = null;
           break;
         case 'textarea':
         case 'text':

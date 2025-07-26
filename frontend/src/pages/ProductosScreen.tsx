@@ -15,7 +15,7 @@ import { useGetEntities } from '@/hooks/api/useGetEntities';
 import { useCreateEntity } from '@/hooks/api/useCreateEntity';
 import { useUpdateEntity } from '@/hooks/api/useUpdateEntity';
 import { useDeleteEntity } from '@/hooks/api/useDeleteEntity';
-import { getProducts, createProduct, updateProduct, deleteProduct } from '@/client/API/ProductsClient';
+import { getProducts, createProduct, updateProduct, deleteProduct, type ProductWithImage } from '@/client/API/ProductsClient';
 import { AddModal, EditModal } from '@/components/forms';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 import type { ProductOut, ProductIn } from '@/client/generated/products/client';
@@ -47,7 +47,8 @@ export const ProductosScreen: React.FC = () => {
     createFn: createProduct,
   });
 
-  const updateMutation = useUpdateEntity({
+  // Use correct generics for useUpdateEntity
+  const updateMutation = useUpdateEntity<'code', ProductOut, ProductWithImage>({
     queryKey: 'products',
     updateFn: updateProduct,
   });
@@ -76,18 +77,21 @@ export const ProductosScreen: React.FC = () => {
   };
 
   const handleFormSubmit = async (formData: Record<string, unknown>) => {
-    const productData: ProductIn = {
+    // Build ProductIn and ProductWithImage
+    const product: ProductIn = {
       name: formData.name as string,
       description: formData.description as string,
       price: Number(formData.price), // Price is a number, not Price type
     };
+    const image = formData.image as File | Blob;
+    const payload = { product, image };
 
     if (modalMode === 'create') {
-      await createMutation.mutateAsync({ newEntity: productData });
+      await createMutation.mutateAsync({ newEntity: payload });
     } else if (currentProduct) {
       await updateMutation.mutateAsync({ 
         code: currentProduct.code, 
-        updatedEntity: productData 
+        updatedEntity: payload
       });
     }
     

@@ -78,6 +78,14 @@ export const ENTITY_FIELDS_CONFIG: Record<EntityType, FormField[]> = {
       required: true,
       placeholder: '0.00',
       validation: { min: 0 }
+    },
+    {
+      name: 'image',
+      label: 'Imagen',
+      type: 'file',
+      required: true,
+      placeholder: 'Selecciona una imagen',
+      accept: 'image/*',
     }
   ],
   seller: [

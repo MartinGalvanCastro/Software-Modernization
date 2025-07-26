@@ -1,7 +1,7 @@
 from uuid import UUID
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form, Body
 import json
 
 from src.domain.exceptions import DuplicateProductError, InvalidPriceError, NotFoundError
@@ -33,7 +33,32 @@ async def get_product(
 
 
 
-@router.post("/", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=ProductOut,
+    status_code=status.HTTP_201_CREATED,
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "multipart/form-data": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "product": {
+                                "$ref": "#/components/schemas/ProductIn"
+                            },
+                            "image": {
+                                "type": "string",
+                                "format": "binary"
+                            }
+                        },
+                        "required": ["product", "image"]
+                    }
+                }
+            }
+        }
+    }
+)
 async def create_product(
     product: str = Form(...),
     image: UploadFile = File(...),
@@ -87,3 +112,10 @@ async def delete_product(
     """Delete a product by its UUID code."""
     await service.delete_product(code)
 
+
+
+@router.post(
+    "/openapi-schema-productin",
+)
+async def _openapi_schema_productin(product: ProductIn = Body(...)):
+    pass

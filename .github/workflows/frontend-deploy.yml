@@ -44,7 +44,7 @@ jobs:
           
           # Fetch all parameters at once
           ALB_DNS_NAME=$(aws ssm get-parameter --name "/modernizacion/frontend/ALB_DNS_NAME" --query "Parameter.Value" --output text)
-          VITE_API_BASE_URL="https://${ALB_DNS_NAME}"
+          VITE_API_BASE_URL="http://${ALB_DNS_NAME}"
           VITE_COGNITO_USER_POOL_ID=$(aws ssm get-parameter --name "/modernizacion/frontend/VITE_COGNITO_USER_POOL_ID" --query "Parameter.Value" --output text)
           VITE_COGNITO_APP_CLIENT_ID=$(aws ssm get-parameter --name "/modernizacion/frontend/VITE_COGNITO_APP_CLIENT_ID" --query "Parameter.Value" --output text)
           VITE_APP_NAME=$(aws ssm get-parameter --name "/modernizacion/frontend/VITE_APP_NAME" --query "Parameter.Value" --output text)

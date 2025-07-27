@@ -172,6 +172,7 @@ export const ProductosScreen: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Imagen</TableHead>
                       <TableHead>Código</TableHead>
                       <TableHead>Nombre</TableHead>
                       <TableHead>Descripción</TableHead>
@@ -183,6 +184,22 @@ export const ProductosScreen: React.FC = () => {
                   <TableBody>
                     {products.map((product) => (
                       <TableRow key={product.code}>
+                        <TableCell>
+                          {product.imageUrl ? (
+                            <img
+                              src={product.imageUrl}
+                              alt={product.name}
+                              loading="lazy"
+                              width={96}
+                              height={96}
+                              style={{ objectFit: 'cover', borderRadius: '8px', width: '96px', height: '96px', background: '#f3f3f3' }}
+                            />
+                          ) : (
+                            <div style={{ width: 96, height: 96, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', color: '#aaa', fontSize: '0.8rem' }}>
+                              Sin imagen
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="font-medium">{product.code}</TableCell>
                         <TableCell>{product.name}</TableCell>
                         <TableCell className="max-w-xs truncate">{product.description}</TableCell>

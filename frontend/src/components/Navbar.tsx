@@ -69,16 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, classNa
               >
                 Productos
               </button>
-              <button
-                onClick={() => handleNavigation('ventas')}
-                className={`transition-colors font-medium ${
-                  isActive('ventas')
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
-                }`}
-              >
-                Ventas
-              </button>
+              {/* Ventas tab hidden */}
               <button
                 onClick={() => handleNavigation('vendedores')}
                 className={`transition-colors font-medium ${
@@ -118,16 +109,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, classNa
           >
             Productos
           </button>
-          <button
-            onClick={() => handleNavigation('ventas')}
-            className={`block w-full text-left px-3 py-2 transition-colors font-medium ${
-              isActive('ventas')
-                ? 'text-blue-600 bg-blue-50'
-                : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-            }`}
-          >
-            Ventas
-          </button>
+          {/* Ventas tab hidden in mobile */}
           <button
             onClick={() => handleNavigation('vendedores')}
             className={`block w-full text-left px-3 py-2 transition-colors font-medium ${

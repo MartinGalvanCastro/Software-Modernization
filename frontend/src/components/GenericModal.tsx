@@ -143,6 +143,15 @@ export function GenericModal({
       // Handle submission error - preserve form data (don't close modal)
       console.error('Form submission error:', error);
       toast.error(extractErrorMessage(error));
+
+      // Clear file input fields in formData and DOM
+      fields.forEach(field => {
+        if (field.type === 'file') {
+          setFormData(prev => ({ ...prev, [field.name]: null }));
+          const inputEl = document.getElementById(field.name) as HTMLInputElement | null;
+          if (inputEl) inputEl.value = '';
+        }
+      });
     }
   };
 
@@ -183,19 +192,39 @@ export function GenericModal({
           </Select>
         );
 
-      case 'file':
+      case 'file': {
+        // Custom file input: show button and file name
+        const inputId = `file-input-${field.name}`;
+        const fileValue = formData[field.name];
         return (
-          <Input
-            id={field.name}
-            type="file"
-            accept={field.accept}
-            onChange={(e) => {
-              const file = e.target.files?.[0] || null;
-              handleInputChange(field.name, file);
-            }}
-            className={error ? 'border-red-500' : ''}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <input
+              id={inputId}
+              type="file"
+              accept={field.accept}
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                handleInputChange(field.name, file);
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const inputEl = document.getElementById(inputId) as HTMLInputElement | null;
+                if (inputEl) inputEl.click();
+              }}
+              className={error ? 'border-red-500' : ''}
+            >
+              {field.placeholder || 'Seleccionar archivo'}
+            </Button>
+            {fileValue instanceof File && (
+              <span style={{ fontSize: '0.95rem', color: '#444', wordBreak: 'break-all' }}>{fileValue.name}</span>
+            )}
+          </div>
         );
+      }
 
       default:
         return (

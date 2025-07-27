@@ -10,7 +10,8 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { EntityTableActions } from '@/components/EntityTableActions';
 import { useGetEntities } from '@/hooks/api/useGetEntities';
 import { useCreateEntity } from '@/hooks/api/useCreateEntity';
 import { useUpdateEntity } from '@/hooks/api/useUpdateEntity';
@@ -171,7 +172,7 @@ export const VendedoresScreen: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
+                    <TableHead>Code</TableHead>
                     <TableHead>Nombre</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Creado</TableHead>
@@ -187,22 +188,12 @@ export const VendedoresScreen: React.FC = () => {
                         <TableCell>{seller.email}</TableCell>
                         <TableCell>{new Date(seller.createdAt).toLocaleDateString()}</TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(seller)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDelete(seller)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <EntityTableActions
+                            onEdit={() => handleEdit(seller)}
+                            onDelete={() => handleDelete(seller)}
+                            editLabel="Editar"
+                            deleteLabel="Eliminar"
+                          />
                         </TableCell>
                       </TableRow>
                     ))

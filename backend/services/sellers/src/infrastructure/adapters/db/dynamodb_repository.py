@@ -36,14 +36,14 @@ class SellerModel(Model):
             host = settings.DYNAMODB_ENDPOINT_URL
 
     # Primary key
-    id         = UnicodeAttribute(hash_key=True)
-
-    # Non‐key attributes
-    code       = UnicodeAttribute()
+    code       = UnicodeAttribute(hash_key=True)
+    id         = UnicodeAttribute()  # Restore 'id' as a regular attribute
     name       = UnicodeAttribute()
     email      = UnicodeAttribute()
     created_at = UTCDateTimeAttribute()
     updated_at = UTCDateTimeAttribute()
+
+    # Non‐key attributes
 
     # GSI for email uniqueness
     email_index = EmailIndex()
@@ -63,7 +63,7 @@ class DynamoDBSellerRepo(SellerRepositoryPort):
     async def get_by_code(self, code: UUID) -> Optional[Seller]:
         try:
             # Since code and id contain the same value, we can query by id (the hash key)
-            item = SellerModel.get(hash_key=str(code))
+            item = SellerModel.get(str(code))
             return _to_domain(item)
         except SellerModel.DoesNotExist:
             return None
@@ -84,8 +84,8 @@ class DynamoDBSellerRepo(SellerRepositoryPort):
         new_code = uuid4()
 
         record = SellerModel(
-            id=str(new_code),  # Use the UUID as the id (primary key)
-            code=str(new_code),
+            code=str(new_code),  # Use the UUID as the code (primary key)
+            id=str(new_code),    # Ensure 'id' is set for backwards compatibility
             name=name,
             email=email,
             created_at=now,
@@ -105,7 +105,7 @@ class DynamoDBSellerRepo(SellerRepositoryPort):
         # Fetch existing
         try:
             # Since code and id contain the same value, we can query by id (the hash key)
-            item = SellerModel.get(hash_key=str(code))
+            item = SellerModel.get(str(code))
         except SellerModel.DoesNotExist:
             raise NotFoundError(code)
 
@@ -131,7 +131,7 @@ class DynamoDBSellerRepo(SellerRepositoryPort):
     async def delete(self, code: UUID) -> None:
         try:
             # Since code and id contain the same value, we can query by id (the hash key)
-            item = SellerModel.get(hash_key=str(code))
+            item = SellerModel.get(str(code))
             item.delete()
         except SellerModel.DoesNotExist:
             raise NotFoundError(code)

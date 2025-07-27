@@ -63,7 +63,7 @@ export const LoginScreen: React.FC = () => {
         <Card className="w-full">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">
-              Tienda de DukkeGei
+              Shoppy App - Iniciar Sesión
             </CardTitle>
             <CardDescription className="text-left text-sm">
               Ingresa tu email y contraseña para acceder

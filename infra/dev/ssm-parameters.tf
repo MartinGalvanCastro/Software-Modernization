@@ -55,7 +55,7 @@ resource "aws_ssm_parameter" "s3_website_endpoint" {
 resource "aws_ssm_parameter" "app_name" {
   name  = "/modernizacion/frontend/VITE_APP_NAME"
   type  = "String"
-  value = "Tienda de DukkeGei"
+  value = "Shoppy App"
 
   tags = {
     Purpose = "Frontend CI/CD"

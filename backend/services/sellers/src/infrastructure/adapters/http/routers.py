@@ -45,7 +45,7 @@ async def update_seller(
     service: SellerServicePort = Depends(get_service),
 ):
     updated = await service.update_seller(
-        seller_id=seller_id,
+        code=seller_id,
         name=payload.name,
         email=payload.email,
     )

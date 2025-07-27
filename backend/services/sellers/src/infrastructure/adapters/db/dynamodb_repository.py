@@ -37,13 +37,12 @@ class SellerModel(Model):
 
     # Primary key
     code       = UnicodeAttribute(hash_key=True)
-    id         = UnicodeAttribute()  # Restore 'id' as a regular attribute
+    id         = UnicodeAttribute() 
     name       = UnicodeAttribute()
     email      = UnicodeAttribute()
     created_at = UTCDateTimeAttribute()
     updated_at = UTCDateTimeAttribute()
 
-    # Non‐key attributes
 
     # GSI for email uniqueness
     email_index = EmailIndex()
